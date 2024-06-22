@@ -1,6 +1,6 @@
 from db import *
-from datetime import datetime
 from sqlalchemy.orm import scoped_session
+from datetime import datetime
 
 # 유저 검색에 필요한 Key가 잘못된 경우 Raise
 class InvalidateUserQuery(Exception):
@@ -17,6 +17,11 @@ class UserDao:
     def insert_user(self, name:str, email:str, hashed_password:str):
         u = User(name, email, hashed_password)
         self.db_session.add(u)
+        self.db_session.commit()
+    
+    def insert_authcode(self, authcode:int, name:str):
+        a = Authcode(authcode, name)
+        self.db_session.add(a)
         self.db_session.commit()
 
     def get_authcode(self, authcode:int) -> Authcode:
@@ -53,19 +58,22 @@ class MemberDao:
         self.db_session.add(m)
         self.db_session.commit()
 
-    def get_all_memeber(self) -> list:
+    def get_all_memebers(self) -> list:
         return self.db_session.query(Member).all()
     
     def delete_member(self, id:int):
         self.db_session.query(Member).filter_by(id=id).delete()
         self.db_session.commit()
 
+class DutyDao:
+    pass
+
 class DutyLogDao:
     def __init__(self, db_session:scoped_session):
         self.db_session = db_session
     
     def insert_dutyLog(self, uid:int, duty_type:int, date:str):
-        l = DutyLog(uid, duty_type, date)
+        l = DutyLog(uid, duty_type, datetime.strftime(date, "%Y%m%d"))
         self.db_session.add(l)
         self.db_session.commit()
 
