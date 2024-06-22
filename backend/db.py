@@ -1,10 +1,8 @@
-from sqlalchemy.dialects import mysql
-from sqlalchemy.schema import CreateTable
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-from .models import User
+from .models import *
 from config import DB_URL
 
 engine = create_engine(DB_URL)
