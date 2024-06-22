@@ -19,6 +19,7 @@ class UserService:
             if auth == None:
                 return Response("인증코드가 틀렸습니다.", 401)
 
+            self.dao.delete_authcode(authcode)
             self.dao.insert_user(auth.name, email, pwd)
 
             return Response("가입 성공!", 201)
@@ -50,13 +51,21 @@ class UserService:
 
             return rsp
     
-    def update_password(self, pwd:str, new_pwd:str):
+    def update_password(self, pwd:str, new_pwd:str) -> Response:
         u = self.dao.get_user(g.uid)
 
         if not bcrypt.checkpw(pwd.encode('utf-8'), u.pwd.encode('utf-8')):
             return Response("기존 패스워드가 틀렸습니다.", 401)
         else:
-            pwd = bcrypt.hashpw(pwd.encode('utf-8', bcrypt.gensalt()).decode('utf-8'))
+            pwd = bcrypt.hashpw(new_pwd.encode('utf-8', bcrypt.gensalt()).decode('utf-8'))
             self.dao.update_pwd(u.uid, pwd)
             return Response(status=200)
 
+    def delete_self(self, pwd:str) -> Response:
+        u = self.dao.get_user(g.uid)
+
+        if not bcrypt.checkpw(pwd.encode('utf-8'), u.pwd.encode('utf-8')):
+            return Response("패스워드가 틀렸습니다.", 401)
+        else:
+            self.dao.delete_user(g.uid)
+            return Response(status=200)
