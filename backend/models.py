@@ -1,5 +1,6 @@
 from db import Base
 from datetime import datetime
+from datetime import date as _date
 from sqlalchemy import Column, Integer, Date, VARCHAR
 
 class Authcode(Base):
@@ -12,18 +13,30 @@ class Authcode(Base):
         self.authcode = authcode
         self.name = name
 
-class DutyLog:
-    __tablename__ = "duty_log"
-    duty_id = Column(Integer, primary_key=True)
-    uid = Column(Integer, nullable=False)
+class Duty:
+    __tablename__ = "duty"
+    did = Column(Integer, autoincrement=True, primary_key=True)
+    mid = Column(Integer, nullable=False)
     duty_type = Column(Integer, nullable=False)
     date = Column(Date, nullable=False)
 
-    def __init__(self, duty_id:int, uid:int, duty_type:int, date:str):
-        self.duty_id = duty_id
-        self.uid = uid
+    def __init__(self, mid:int, duty_type:Integer, date:_date):
+        self.mid = mid
         self.duty_type = duty_type
-        self.date = datetime.strftime(date, "%Y%m%d") # Format must be YYYYMMDD
+        self.date = date
+
+class DutyLog:
+    __tablename__ = "duty_log"
+    did = Column(Integer, primary_key=True)
+    mid = Column(Integer, nullable=False)
+    duty_type = Column(Integer, nullable=False)
+    date = Column(Date, nullable=False)
+
+    def __init__(self, did:int, mid:int, duty_type:int, date:_date):
+        self.did = did
+        self.mid = mid
+        self.duty_type = duty_type
+        self.date = date
 
 class Member:
     __tablename__ = "member"
@@ -45,7 +58,7 @@ class Score(Base):
     __tablename__ = "scoretable"
 
     id = Column(Integer, autoincrement=True, primary_key=True)
-    title = Column(VARCHAR(12), nullable=False)
+    title = Column(VARCHAR(100), nullable=False)
     score = Column(Integer, nullable=False)
 
     def __init__(self, title:str, score:int):

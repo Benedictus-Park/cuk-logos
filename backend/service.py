@@ -16,7 +16,6 @@ def create_jwt(uid:int, name:str) -> str:
         algorithm='HS256'
     )
 
-
 class UserService:
     def __init__(self, dao:UserDao):
         self.dao = dao
@@ -45,7 +44,6 @@ class UserService:
             return Response("로그인 정보가 틀렸습니다.", 401)
         else:
             json = {
-                'uid':u.uid,
                 'name':u.name
             }
 
@@ -107,6 +105,39 @@ class MemberService:
         rsp.set_cookie("authorization", create_jwt(g.uid, g.name))
 
         return rsp
+    
+class ScoreService:
+    def __init__(self, dao:ScoreTableDao):
+        self.dao = dao
+
+    def regist_subject(self, title:str, score:int) -> Response:
+        self.dao.insert_subject(title, score)
+        
+        rsp = Response(status=201)
+        rsp.set_cookie("authoriztion", create_jwt(g.uid, g.name))
+
+        return rsp
+    
+    def delete_subject(self, id:int) -> Response:
+        self.dao.delete_subject(id)
+
+        rsp = Response(status=200)
+        rsp.set_cookie("authorization", create_jwt(g.uid, g.name))
+
+        return rsp
+    
+    def get_subjects(self) -> Response:
+        l = self.dao.get_all_subject()
+
+        payload = {
+            'subjects':[] if len(l) == 0 else l
+        }
+        rsp = jsonify(payload)
+        rsp.set_cookie("authorization", create_jwt(g.uid, g.name))
+
+        return rsp
+
+# Duty 관련은 맨 마지막에 처리
         
 # Duty Type
     # 0 - 평일미사

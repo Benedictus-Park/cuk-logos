@@ -1,6 +1,7 @@
 from db import *
-from sqlalchemy.orm import scoped_session
+from models import *
 from datetime import datetime
+from sqlalchemy.orm import scoped_session
 
 # 유저 검색에 필요한 Key가 잘못된 경우 Raise
 class InvalidateUserQuery(Exception):
@@ -65,15 +66,21 @@ class MemberDao:
         self.db_session.query(Member).filter_by(id=id).delete()
         self.db_session.commit()
 
-class DutyDao:
-    pass
-
 class DutyLogDao:
     def __init__(self, db_session:scoped_session):
         self.db_session = db_session
+
+    def insert_duty(self, mid:int, duty_type:int, date:str):
+        d = Duty(mid, duty_type, datetime.strptime(date, "%Y%m%d").date())
+        self.db_session.add(d)
+        self.db_session.commit()
+
+    def delete_duty(self, did:int):
+        self.db_session.query(Duty).filter_by(did=did).delete()
+        self.db_session.commit()
     
     def insert_dutyLog(self, uid:int, duty_type:int, date:str):
-        l = DutyLog(uid, duty_type, datetime.strftime(date, "%Y%m%d"))
+        l = DutyLog(uid, duty_type, datetime.strptime(date, "%Y%m%d").date())
         self.db_session.add(l)
         self.db_session.commit()
 
@@ -84,12 +91,21 @@ class DutyLogDao:
         return self.db_session.query(DutyLog).filter_by(uid=uid).all()
     
     def get_dutyLogByDate(self, date:str) -> list:
-        date = datetime.strftime(date, "%Y%m%d") # Format must be YYYYMMDD
+        date = datetime.strptime(date, "%Y%m%d").date() # Format must be YYYYMMDD
         return self.db_session.query(DutyLog).filter_by(date=date).all()
     
     def delete_dutyLog(self, id:int):
         self.db_session.query(DutyLog).filter_by(id=id).delete()
         self.db_session.commit()
+
+    def get_all_duties(self) -> list:
+        return self.db_session.query(Duty).all()
+    
+    def get_dutyByDid(self, did:int) -> Duty:
+        return self.db_session.query(Duty).filter_by(did=did).one_or_none()
+    
+    def get_dutyByDate(self, date:str):
+        return self.db_session.query(Duty).filter_by(date=datetime.strptime(date, "%Y%m%d").date()).one_or_none()
 
 class ScoreTableDao:
     def __init__(self, db_session:scoped_session):
