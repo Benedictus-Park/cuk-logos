@@ -75,6 +75,16 @@ class UserService:
         authcode = randint(100000, 999999)
         self.dao.insert_authcode(authcode, name)
 
+        payload =  {
+            "name":name,
+            "authcode":authcode
+        }
+
+        rsp = jsonify(payload)
+        rsp.set_cookie("authorization", create_jwt(g.uid, g.name))
+
+        return rsp
+
 class MemberService:
     def __init__(self, dao:MemberDao):
         self.dao = dao
@@ -137,7 +147,9 @@ class ScoreService:
 
         return rsp
 
-# Duty 관련은 맨 마지막에 처리
+class DutyLogService:
+    pass
+    # Duty 관련은 맨 마지막에 처리
         
 # Duty Type
     # 0 - 평일미사
