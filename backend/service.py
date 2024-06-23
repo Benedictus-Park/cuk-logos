@@ -44,11 +44,12 @@ class UserService:
             return Response("로그인 정보가 틀렸습니다.", 401)
         else:
             json = {
-                'name':u.name
+                'name':u.name,
+                'jwt':create_jwt(g.uid, g.name)
             }
 
             rsp = jsonify(json)
-            rsp.set_cookie(key='authorization', value=create_jwt(g.uid, g.name), status = 202)
+            rsp.status_code = 202
 
             return rsp
     
@@ -77,11 +78,12 @@ class UserService:
 
         payload =  {
             "name":name,
-            "authcode":authcode
+            "authcode":authcode,
+            "jwt":create_jwt(g.uid, g.name)
         }
 
         rsp = jsonify(payload)
-        rsp.set_cookie("authorization", create_jwt(g.uid, g.name))
+        rsp.status_code = 201
 
         return rsp
 
@@ -93,8 +95,10 @@ class MemberService:
         for member in members:
             self.dao.insert_member(member)
         
-        rsp = Response(status=201)
-        rsp.set_cookie("authorization", create_jwt(g.uid, g.name))
+        rsp = jsonify({
+            "jwt":create_jwt(g.uid, g.name)
+        })
+        rsp.status_code = 201
 
         return rsp
     
@@ -102,17 +106,20 @@ class MemberService:
         members = self.dao.get_all_memebers()
 
         rsp = jsonify({
-            "members":[] if len(members) == 0 else members
+            "members":[] if len(members) == 0 else members,
+            "jwt":create_jwt(g.uid, g.name)
         })
-        rsp.set_cookie("authorization", create_jwt(g.uid, g.name))
+        rsp.status_code = 202
 
         return rsp
     
     def delete_member(self, id:int) -> Response:
         self.dao.delete_member(id)
 
-        rsp = Response(status=201)
-        rsp.set_cookie("authorization", create_jwt(g.uid, g.name))
+        rsp = jsonify({
+            "jwt":create_jwt(g.uid, g.name)
+        })
+        rsp.status_code = 200
 
         return rsp
     
@@ -123,16 +130,20 @@ class ScoreService:
     def regist_subject(self, title:str, score:int) -> Response:
         self.dao.insert_subject(title, score)
         
-        rsp = Response(status=201)
-        rsp.set_cookie("authoriztion", create_jwt(g.uid, g.name))
+        rsp = jsonify({
+            "jwt":create_jwt(g.uid, g.name)
+        })
+        rsp.status_code = 201
 
         return rsp
     
     def delete_subject(self, id:int) -> Response:
         self.dao.delete_subject(id)
 
-        rsp = Response(status=200)
-        rsp.set_cookie("authorization", create_jwt(g.uid, g.name))
+        rsp = jsonify({
+            "jwt":create_jwt(g.uid, g.name)
+        })
+        rsp.status_code = 200
 
         return rsp
     
@@ -140,15 +151,16 @@ class ScoreService:
         l = self.dao.get_all_subject()
 
         payload = {
-            'subjects':[] if len(l) == 0 else l
+            'subjects':[] if len(l) == 0 else l,
+            'jwt':create_jwt(g.uid, g.name)
         }
         rsp = jsonify(payload)
-        rsp.set_cookie("authorization", create_jwt(g.uid, g.name))
 
         return rsp
 
 class DutyLogService:
-    pass
+    def __init__(self, dao:DutyLogDao):
+        self.dao = dao
     # Duty 관련은 맨 마지막에 처리
         
 # Duty Type

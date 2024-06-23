@@ -33,7 +33,7 @@ class UserDao:
         self.db_session.commit()
     
     def get_user(self, uid:int=None, email:str=None) -> User:
-        if uid == None or email == None:
+        if uid == None and email == None:
             raise InvalidateUserQuery()
         elif uid != None:
             return self.db_session.query(User).filter_by(uid=uid).one_or_none()

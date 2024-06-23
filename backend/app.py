@@ -1,9 +1,9 @@
 import jwt
 from service import *
-from db import db_session
 from functools import wraps
 from flask_cors import CORS
 from config import JWT_SECRET_KEY
+from db import init_database, db_session
 from flask import Flask, request, g, Response
 
 def login_required(f):
@@ -68,6 +68,8 @@ def registration() -> Response:
 def authenticate() -> Response:
     payload = request.get_json()
 
+    print(payload['email'])
+
     try:
         email = payload['email']
         pwd = payload['pwd']
@@ -117,3 +119,7 @@ def issue_authcode() -> Response:
     return userService.issue_authcode(name)
 
 # Member Endpoints
+
+if __name__ == "__main__":
+    init_database()
+    app.run("127.0.0.1", port=4444, debug=True)
