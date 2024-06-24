@@ -1,6 +1,10 @@
-let btnRegistration = document.getElementById("btnRegistration");
+document.getElementById("authcode").onkeydown = (e) => {
+    if(e.key == "Enter"){
+        document.getElementById("btnRegistration").click();
+    }
+}
 
-btnRegistration.onclick = () => {
+document.getElementById("btnRegistration").onclick = () => {
     let email = document.getElementById("email").value;
     let pwd = document.getElementById("pwd").value;
     let pwd_chk = document.getElementById("pwd_chk").value;

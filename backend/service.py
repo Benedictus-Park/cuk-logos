@@ -32,7 +32,7 @@ class UserService:
                 return Response("인증코드가 틀렸습니다.", 401)
 
             self.dao.delete_authcode(authcode)
-            self.dao.insert_user(auth.name, email, pwd)
+            self.dao.insert_user(auth.name, email, pwd, auth.is_king)
 
             return Response("가입 성공!", 201)
         

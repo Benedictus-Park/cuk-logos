@@ -1,6 +1,10 @@
-let btnLogin = document.getElementById("btnLogin");
+document.getElementById("pwd").onkeydown = (e) => {
+    if(e.key == "Enter"){
+        document.getElementById("btnLogin").click();
+    }
+}
 
-btnLogin.onclick = () => {
+document.getElementById("btnLogin").onclick = () => {
     let email = document.getElementById("email").value;
     let pwd = document.getElementById("pwd").value;
 

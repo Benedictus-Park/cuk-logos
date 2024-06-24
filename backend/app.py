@@ -57,8 +57,6 @@ def registration() -> Response:
         authcode = int(payload['authcode'])
     except KeyError:
         return Response(status=400)
-    
-    print(pwd)
 
     if pwd != pwd_chk:
         return Response(response="패스워드를 다시 확인해 주세요.", status=400)
@@ -74,8 +72,6 @@ def authenticate() -> Response:
         pwd = payload['pwd']
     except KeyError:
         return Response(status=400)
-    
-    print(pwd)
     
     return userService.authenticate(email, pwd)
 
