@@ -6,7 +6,7 @@ btnRegistration.onclick = () => {
     let pwd_chk = document.getElementById("pwd_chk").value;
     let authcode = document.getElementById("authcode").value;
 
-    if(!id || !pwd || !pwd_chk || !authcode){
+    if(!email || !pwd || !pwd_chk || !authcode){
         alert("모든 칸을 입력하시오.");
         return;
     }

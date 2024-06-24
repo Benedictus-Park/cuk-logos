@@ -1,17 +1,19 @@
 from db import Base
 from datetime import datetime
 from datetime import date as _date
-from sqlalchemy import Column, Integer, Date, VARCHAR
+from sqlalchemy import Column, Integer, Date, VARCHAR, BOOLEAN
 
 class Authcode(Base):
     __tablename__ = "authcode"
 
     authcode = Column(Integer, nullable=False, primary_key=True)
     name = Column(VARCHAR(15), nullable=False)
+    is_king = Column(BOOLEAN, nullable=False)
 
-    def __init__(self, authcode:int, name:str):
+    def __init__(self, authcode:int, name:str, is_king:bool):
         self.authcode = authcode
         self.name = name
+        self.is_king = is_king
 
 class Duty:
     __tablename__ = "duty"
@@ -72,8 +74,10 @@ class User(Base):
     name = Column(VARCHAR(15), nullable=False)
     email = Column(VARCHAR(320), nullable=False, unique=True)
     pwd = Column(VARCHAR(60), nullable=False)
+    is_king = Column(BOOLEAN, nullable=False)
 
-    def __init__(self, name:str, email:str, pwd:str):
+    def __init__(self, name:str, email:str, pwd:str, is_king:bool):
         self.name = name
         self.email = email
         self.pwd = pwd
+        self.is_king = is_king

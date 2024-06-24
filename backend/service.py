@@ -6,10 +6,11 @@ from config import JWT_SECRET_KEY
 from flask import jsonify, Response, g
 from datetime import datetime, timedelta, timezone
 
-def create_jwt(uid:int, name:str) -> str:
+def create_jwt(uid:int, name:str, email:str) -> str:
     return jwt.encode({
         'uid':uid,
         'name':name,
+        'email':email,
         'exp':datetime.now(timezone.utc) + timedelta(hours=1)
         },
         JWT_SECRET_KEY,
@@ -24,7 +25,7 @@ class UserService:
         if self.dao.get_user(email=email) != None:
             return Response("이미 사용 중인 이메일입니다.", 409)
         else:
-            pwd = bcrypt.hashpw(pwd.encode('utf-8', bcrypt.gensalt()).decode('utf-8'))
+            pwd = bcrypt.hashpw(pwd.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             auth = self.dao.get_authcode(authcode)
 
             if auth == None:
@@ -36,7 +37,7 @@ class UserService:
             return Response("가입 성공!", 201)
         
     def authenticate(self, email:str, pwd:str) -> Response:
-        u = self.dao.get_user(email)
+        u = self.dao.get_user(email=email)
 
         if u == None:
             return Response("로그인 정보가 틀렸습니다.", 401)
@@ -45,10 +46,10 @@ class UserService:
         else:
             json = {
                 'name':u.name,
-                'jwt':create_jwt(g.uid, g.name)
+                'is_king':u.is_king
             }
-
             rsp = jsonify(json)
+            rsp.set_cookie('authorization', create_jwt(u.uid, u.name, u.email))
             rsp.status_code = 202
 
             return rsp
@@ -72,17 +73,19 @@ class UserService:
             self.dao.delete_user(g.uid)
             return Response(status=200)
     
-    def issue_authcode(self, name:str) -> Response:
-        authcode = randint(100000, 999999)
-        self.dao.insert_authcode(authcode, name)
+    def issue_authcode(self, name:str, is_king:bool) -> Response:
+        while True:
+            authcode = randint(100000, 999999)
+            if self.dao.insert_authcode(authcode, name, is_king):
+                break
 
         payload =  {
             "name":name,
             "authcode":authcode,
-            "jwt":create_jwt(g.uid, g.name)
+            "is_king":g.is_king
         }
-
         rsp = jsonify(payload)
+        rsp.set_cookie('authorization', create_jwt(g.uid, g.name, g.email))
         rsp.status_code = 201
 
         return rsp
@@ -95,10 +98,8 @@ class MemberService:
         for member in members:
             self.dao.insert_member(member)
         
-        rsp = jsonify({
-            "jwt":create_jwt(g.uid, g.name)
-        })
-        rsp.status_code = 201
+        rsp = Response(status=201)
+        rsp.set_cookie('authorization', create_jwt(g.uid, g.name, g.email))
 
         return rsp
     
@@ -106,20 +107,18 @@ class MemberService:
         members = self.dao.get_all_memebers()
 
         rsp = jsonify({
-            "members":[] if len(members) == 0 else members,
-            "jwt":create_jwt(g.uid, g.name)
+            "members":[] if len(members) == 0 else members
         })
         rsp.status_code = 202
+        rsp.set_cookie('authorization', create_jwt(g.uid, g.name, g.email))
 
         return rsp
     
     def delete_member(self, id:int) -> Response:
         self.dao.delete_member(id)
 
-        rsp = jsonify({
-            "jwt":create_jwt(g.uid, g.name)
-        })
-        rsp.status_code = 200
+        rsp = Response(status=200)
+        rsp.set_cookie('authorization', create_jwt(g.uid, g.name, g.email))
 
         return rsp
     
@@ -129,21 +128,17 @@ class ScoreService:
 
     def regist_subject(self, title:str, score:int) -> Response:
         self.dao.insert_subject(title, score)
-        
-        rsp = jsonify({
-            "jwt":create_jwt(g.uid, g.name)
-        })
-        rsp.status_code = 201
+
+        rsp = Response(status=201)
+        rsp.set_cookie('authorization', create_jwt(g.uid, g.name, g.email))
 
         return rsp
     
     def delete_subject(self, id:int) -> Response:
         self.dao.delete_subject(id)
 
-        rsp = jsonify({
-            "jwt":create_jwt(g.uid, g.name)
-        })
-        rsp.status_code = 200
+        rsp = Response(status=200)
+        rsp.set_cookie('authorization', create_jwt(g.uid, g.name, g.email))
 
         return rsp
     
@@ -152,9 +147,9 @@ class ScoreService:
 
         payload = {
             'subjects':[] if len(l) == 0 else l,
-            'jwt':create_jwt(g.uid, g.name)
         }
         rsp = jsonify(payload)
+        rsp.set_cookie('authorization', create_jwt(g.uid, g.name, g.email))
 
         return rsp
 

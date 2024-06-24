@@ -1,7 +1,7 @@
 let btnLogin = document.getElementById("btnLogin");
 
 btnLogin.onclick = () => {
-    let email = document.getElementById("id").value;
+    let email = document.getElementById("email").value;
     let pwd = document.getElementById("pwd").value;
 
     if(!email || !pwd){
@@ -22,7 +22,7 @@ btnLogin.onclick = () => {
         if(rsp.ok){
             rsp.json().then((json) => {
                 sessionStorage.setItem('name', json['name']);
-                sessionStorage.setItem('authorization', json['jwt']);
+                sessionStorage.setItem('is_king', json['is_king']);
                 location.href = 'main.html';
             });
         }

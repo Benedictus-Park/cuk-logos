@@ -20,9 +20,8 @@ def login_required(f):
                 return Response(response="Invalid Token", staus=401)
             
             g.uid = payload['uid']
-            g.username = payload['username']
+            g.name = payload['name']
             g.email = payload['email']
-            g.is_manager = payload['is_manager']
 
         return f(*args, **kwargs)
     return wrapper
@@ -59,6 +58,8 @@ def registration() -> Response:
     except KeyError:
         return Response(status=400)
     
+    print(pwd)
+
     if pwd != pwd_chk:
         return Response(response="패스워드를 다시 확인해 주세요.", status=400)
     
@@ -68,13 +69,13 @@ def registration() -> Response:
 def authenticate() -> Response:
     payload = request.get_json()
 
-    print(payload['email'])
-
     try:
         email = payload['email']
         pwd = payload['pwd']
     except KeyError:
         return Response(status=400)
+    
+    print(pwd)
     
     return userService.authenticate(email, pwd)
 
@@ -113,10 +114,11 @@ def issue_authcode() -> Response:
 
     try:
         name = payload['name']
+        is_king = bool(payload['is_king'])
     except KeyError:
         return Response(status = 400)
     
-    return userService.issue_authcode(name)
+    return userService.issue_authcode(name, is_king)
 
 # Member Endpoints
 
