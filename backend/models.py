@@ -13,7 +13,7 @@ class Authcode(Base):
         self.authcode = authcode
         self.name = name
 
-class Duty:
+class Duty(Base):
     __tablename__ = "duty"
     did = Column(Integer, autoincrement=True, primary_key=True)
     mid = Column(Integer, nullable=False)
@@ -25,7 +25,7 @@ class Duty:
         self.duty_type = duty_type
         self.date = date
 
-class DutyLog:
+class DutyLog(Base):
     __tablename__ = "duty_log"
     did = Column(Integer, primary_key=True)
     mid = Column(Integer, nullable=False)
@@ -38,7 +38,7 @@ class DutyLog:
         self.duty_type = duty_type
         self.date = date
 
-class Member:
+class Member(Base):
     __tablename__ = "member"
     id = Column(Integer, autoincrement=True, primary_key=True)
     name = Column(VARCHAR(15), nullable=False)

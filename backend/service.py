@@ -131,17 +131,6 @@ class UserService:
 class MemberService:
     def __init__(self, dao:MemberDao):
         self.dao = dao
-
-    def regist_member(self, members:list) -> Response:
-        for member in members:
-            self.dao.insert_member(member)
-
-        rsp = jsonify({
-            "jwt":create_jwt(g.uid, g.name, g.email)
-        })
-        rsp.status_code = 201
-
-        return rsp
     
     def get_members(self) -> Response:
         members = self.dao.get_all_memebers()
@@ -154,39 +143,9 @@ class MemberService:
 
         return rsp
     
-    def delete_member(self, id:int) -> Response:
-        self.dao.delete_member(id)
-
-        rsp = jsonify({
-            "jwt":create_jwt(g.uid, g.name, g.email)
-        })
-        rsp.status_code = 200
-
-        return rsp
-    
 class ScoreService:
     def __init__(self, dao:ScoreTableDao):
         self.dao = dao
-
-    def regist_subject(self, title:str, score:int) -> Response:
-        self.dao.insert_subject(title, score)
-
-        rsp = jsonify({
-            "jwt":create_jwt(g.uid, g.name, g.email)
-        })
-        rsp.status_code = 201
-
-        return rsp
-    
-    def delete_subject(self, id:int) -> Response:
-        self.dao.delete_subject(id)
-
-        rsp = jsonify({
-            "jwt":create_jwt(g.uid, g.name, g.email)
-        })
-        rsp.status_code = 200
-
-        return rsp
     
     def get_subjects(self) -> Response:
         l = self.dao.get_all_subject()

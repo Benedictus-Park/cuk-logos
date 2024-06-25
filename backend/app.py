@@ -144,6 +144,8 @@ def issue_authcode() -> Response:
     return userService.issue_authcode(name)
 
 # Member Endpoints
+# Scoretable Endpoints
+# Duty Endpoints
 
 if __name__ == "__main__":
     init_database()
