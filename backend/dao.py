@@ -15,18 +15,18 @@ class UserDao:
     def __init__(self, db_session:scoped_session):
         self.db_session = db_session
 
-    def insert_user(self, name:str, email:str, hashed_password:str, is_king:bool):
-        u = User(name, email, hashed_password, is_king)
+    def insert_user(self, name:str, email:str, hashed_password:str):
+        u = User(name, email, hashed_password)
         self.db_session.add(u)
         self.db_session.commit()
     
-    def insert_authcode(self, authcode:int, name:str, is_king:bool) -> bool:
+    def insert_authcode(self, authcode:int, name:str) -> bool:
         a = self.db_session.query(Authcode).filter_by(authcode=authcode).one_or_none()
 
         if a != None:
             return False
 
-        a = Authcode(authcode, name, is_king)
+        a = Authcode(authcode, name)
         self.db_session.add(a)
         self.db_session.commit()
 

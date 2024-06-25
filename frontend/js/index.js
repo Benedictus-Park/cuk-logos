@@ -26,7 +26,7 @@ document.getElementById("btnLogin").onclick = () => {
         if(rsp.ok){
             rsp.json().then((json) => {
                 sessionStorage.setItem('name', json['name']);
-                sessionStorage.setItem('is_king', json['is_king']);
+                sessionStorage.setItem('jwt', json['jwt']);
                 location.href = 'main.html';
             });
         }

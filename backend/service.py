@@ -37,7 +37,7 @@ class UserService:
                 return Response("인증코드가 틀렸습니다.", 401)
 
             self.dao.delete_authcode(authcode)
-            self.dao.insert_user(auth.name, email, pwd, auth.is_king)
+            self.dao.insert_user(auth.name, email, pwd)
 
             return Response("가입 성공!", 201)
         
@@ -51,10 +51,9 @@ class UserService:
         else:
             json = {
                 'name':u.name,
-                'is_king':u.is_king
+                'jwt':create_jwt(u.uid, u.name, u.email)
             }
             rsp = jsonify(json)
-            rsp.set_cookie('authorization', create_jwt(u.uid, u.name, u.email))
             rsp.status_code = 202
 
             return rsp
@@ -113,19 +112,18 @@ class UserService:
             self.dao.delete_user(g.uid)
             return Response(status=200)
     
-    def issue_authcode(self, name:str, is_king:bool) -> Response:
+    def issue_authcode(self, name:str) -> Response:
         while True:
             authcode = randint(100000, 999999)
-            if self.dao.insert_authcode(authcode, name, is_king):
+            if self.dao.insert_authcode(authcode, name):
                 break
 
         payload =  {
             "name":name,
             "authcode":authcode,
-            "is_king":g.is_king
+            "jwt":create_jwt(g.uid, g.name, g.email)
         }
         rsp = jsonify(payload)
-        rsp.set_cookie('authorization', create_jwt(g.uid, g.name, g.email))
         rsp.status_code = 201
 
         return rsp
@@ -137,9 +135,11 @@ class MemberService:
     def regist_member(self, members:list) -> Response:
         for member in members:
             self.dao.insert_member(member)
-        
-        rsp = Response(status=201)
-        rsp.set_cookie('authorization', create_jwt(g.uid, g.name, g.email))
+
+        rsp = jsonify({
+            "jwt":create_jwt(g.uid, g.name, g.email)
+        })
+        rsp.status_code = 201
 
         return rsp
     
@@ -147,18 +147,20 @@ class MemberService:
         members = self.dao.get_all_memebers()
 
         rsp = jsonify({
-            "members":[] if len(members) == 0 else members
+            "members":[] if len(members) == 0 else members,
+            "jwt":create_jwt(g.uid, g.name, g.email)
         })
         rsp.status_code = 202
-        rsp.set_cookie('authorization', create_jwt(g.uid, g.name, g.email))
 
         return rsp
     
     def delete_member(self, id:int) -> Response:
         self.dao.delete_member(id)
 
-        rsp = Response(status=200)
-        rsp.set_cookie('authorization', create_jwt(g.uid, g.name, g.email))
+        rsp = jsonify({
+            "jwt":create_jwt(g.uid, g.name, g.email)
+        })
+        rsp.status_code = 200
 
         return rsp
     
@@ -169,16 +171,20 @@ class ScoreService:
     def regist_subject(self, title:str, score:int) -> Response:
         self.dao.insert_subject(title, score)
 
-        rsp = Response(status=201)
-        rsp.set_cookie('authorization', create_jwt(g.uid, g.name, g.email))
+        rsp = jsonify({
+            "jwt":create_jwt(g.uid, g.name, g.email)
+        })
+        rsp.status_code = 201
 
         return rsp
     
     def delete_subject(self, id:int) -> Response:
         self.dao.delete_subject(id)
 
-        rsp = Response(status=200)
-        rsp.set_cookie('authorization', create_jwt(g.uid, g.name, g.email))
+        rsp = jsonify({
+            "jwt":create_jwt(g.uid, g.name, g.email)
+        })
+        rsp.status_code = 200
 
         return rsp
     
@@ -187,9 +193,9 @@ class ScoreService:
 
         payload = {
             'subjects':[] if len(l) == 0 else l,
+            'jwt':create_jwt(g.uid, g.name, g.email)
         }
         rsp = jsonify(payload)
-        rsp.set_cookie('authorization', create_jwt(g.uid, g.name, g.email))
 
         return rsp
 

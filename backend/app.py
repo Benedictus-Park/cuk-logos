@@ -9,15 +9,15 @@ from flask import Flask, request, g, Response
 def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        token = request.cookies.get("authorization")
+        token = request.headers.get("authorization")
 
         if token is None:
-            return Response(status = 400)
+            return Response("Invalid Token", 401)
         else:
             try:
                 payload = jwt.decode(token, JWT_SECRET_KEY, 'HS256')
             except Exception:
-                return Response(response="Invalid Token", staus=401)
+                return Response("Invalid Token", 401)
             
             g.uid = payload['uid']
             g.name = payload['name']
@@ -137,11 +137,10 @@ def issue_authcode() -> Response:
 
     try:
         name = payload['name']
-        is_king = bool(payload['is_king'])
     except KeyError:
         return Response(status = 400)
     
-    return userService.issue_authcode(name, is_king)
+    return userService.issue_authcode(name)
 
 # Member Endpoints
 
