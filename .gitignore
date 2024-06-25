@@ -1,5 +1,7 @@
 __pycache__/
 backend/test.docx
 .DS_Store/
+backend/.DS_Store
+frontend/.DS_Store
 backend/config.py
 catholic-logos-google.json
