@@ -9,7 +9,7 @@ from flask import Flask, request, g, Response
 def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        token = request.headers.get("authorization")
+        token = request.headers.get("Authorization")
 
         if token is None:
             return Response("Invalid Token", 401)
@@ -132,6 +132,7 @@ def withdraw() -> Response:
     return userService.delete_self(pwd)
 
 @app.route("/issue-authcode", methods=["POST"])
+@login_required
 def issue_authcode() -> Response:
     payload = request.get_json()
 

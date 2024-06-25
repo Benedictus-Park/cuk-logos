@@ -16,7 +16,7 @@ document.getElementById("btnSuicide").onclick = () => {
             method:"POST",
             headers:{
                 "Content-Type":"application/json",
-                "authorization":sessionStorage.getItem('jwt')
+                "Authorization":sessionStorage.getItem('jwt')
             },
             body:JSON.stringify({
                 "pwd":pwd,
