@@ -75,6 +75,33 @@ def authenticate() -> Response:
     
     return userService.authenticate(email, pwd)
 
+@app.route("/retrive-pwd-req", methods=["POST"])
+def retrive_pwd_req() -> Response:
+    payload = request.get_json()
+
+    try:
+        email = payload['email']
+    except KeyError:
+        return Response(status=400)
+    
+    return userService.retrive_pwd_req(email)
+
+@app.route("/reset-pwd", methods=["POST"])
+def reset_pwd() -> Response:
+    payload = request.get_json()
+
+    try:
+        pwd = payload['pwd']
+        pwd_chk = payload['pwd_chk']
+        key = payload['key']
+    except KeyError:
+        return Response(status=400)
+    
+    if pwd != pwd_chk:
+        return Response("패스워드를 다시 확인하세요.", 400)
+    
+    return userService.reset_pwd(pwd, key)
+
 @app.route("/update-password", methods=["POST"])
 @login_required
 def update_password() -> Response:

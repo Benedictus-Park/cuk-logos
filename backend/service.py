@@ -1,8 +1,12 @@
 import jwt
+import time
+import base64
 import bcrypt
 from dao import *
 from random import randint
+from mailer import SendMail
 from config import JWT_SECRET_KEY
+from cryptography.fernet import Fernet
 from flask import jsonify, Response, g
 from datetime import datetime, timedelta, timezone
 
@@ -20,6 +24,7 @@ def create_jwt(uid:int, name:str, email:str) -> str:
 class UserService:
     def __init__(self, dao:UserDao):
         self.dao = dao
+        self.encryptor = Fernet(Fernet.generate_key())
 
     def registration(self, email:str, pwd:str, authcode:str) -> Response:
         if self.dao.get_user(email=email) != None:
@@ -53,6 +58,41 @@ class UserService:
             rsp.status_code = 202
 
             return rsp
+        
+    def retrive_pwd_req(self, email:str) -> Response:
+        u = self.dao.get_user(email=email)
+
+        if u == None:
+            return Response("그런 유저 없는데용...?", 404)
+        else:
+            keybytes = self.encryptor.encrypt((str(u.uid) + "|exp|" + str(time.time())).encode('utf-8'))
+            key = base64.b64encode(keybytes).decode('ascii')
+                                         
+            SendMail(
+                "패스워드 재설정 이메일",
+                "아래 링크에서 패스워드를 재설정할 수 있습니다.\r\n\r\nhttp://127.0.0.1:5500/frontend/reset-pwd.html?key=" + key,
+                u.email
+            )
+            return Response(200)
+        
+    def reset_pwd(self, pwd:str, key:str) -> Response:
+        encrypted = base64.b64decode(key).decode('ascii')
+        decrypted = self.encryptor.decrypt(encrypted.encode('utf-8')).decode('utf-8').split("|exp|")
+
+        if len(decrypted) == 1:
+            return Response("잘못된 요청", 400)
+
+        uid = int(decrypted[0])
+        created = datetime.fromtimestamp(float(decrypted[1]))
+
+        if created + timedelta(hours=24) < datetime.fromtimestamp(time.time()):
+            return Response("만료된 링크입니다.", 403)
+
+        pwd = bcrypt.hashpw(pwd.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        self.dao.update_pwd(uid, pwd)
+
+        return Response(status=200)
     
     def update_password(self, pwd:str, new_pwd:str) -> Response:
         u = self.dao.get_user(g.uid)
@@ -60,7 +100,7 @@ class UserService:
         if not bcrypt.checkpw(pwd.encode('utf-8'), u.pwd.encode('utf-8')):
             return Response("기존 패스워드가 틀렸습니다.", 401)
         else:
-            pwd = bcrypt.hashpw(new_pwd.encode('utf-8', bcrypt.gensalt()).decode('utf-8'))
+            pwd = bcrypt.hashpw(new_pwd.encode('utf-8', bcrypt.gensalt())).decode('utf-8')
             self.dao.update_pwd(u.uid, pwd)
             return Response(status=200)
 
