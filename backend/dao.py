@@ -61,8 +61,8 @@ class MemberDao:
     def __init__(self, db_session:scoped_session):
         self.db_session = db_session
 
-    def insert_member(self, name:str, active_duty:str, stdid:int, major:str, contact:str):
-        m = Member(name, active_duty, stdid, major, contact)
+    def insert_member(self, name:str, nickname:str, active_duty:str, stdid:int, major:str, contact:str):
+        m = Member(name, nickname, active_duty, stdid, major, contact)
         self.db_session.add(m)
         self.db_session.commit()
 
