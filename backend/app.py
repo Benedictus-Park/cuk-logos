@@ -144,6 +144,16 @@ def issue_authcode() -> Response:
     return userService.issue_authcode(name)
 
 # Member Endpoints
+@app.route("/sync-members", methods=["POST"])
+@login_required
+def sync_members() -> Response:
+    return memberService.sync_members()
+
+@app.route("/get-all-members", methods=["POST"])
+@login_required
+def get_all_members() -> Response:
+    return memberService.get_members()
+
 # Scoretable Endpoints
 # Duty Endpoints
 

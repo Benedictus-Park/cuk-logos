@@ -67,7 +67,12 @@ class MemberDao:
         self.db_session.commit()
 
     def get_all_memebers(self) -> list:
-        return self.db_session.query(Member).all()
+        rtn = []
+
+        for i in self.db_session.query(Member).all():
+            rtn.append([i.id, i.name, i.nickname, i.active_duty, i.stdid, i.major, i.contact])
+
+        return rtn
     
     def delete_member(self, id:int):
         self.db_session.query(Member).filter_by(id=id).delete()

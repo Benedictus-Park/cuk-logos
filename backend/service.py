@@ -2,8 +2,10 @@ import jwt
 import time
 import base64
 import bcrypt
+import gspread
 from dao import *
 from random import randint
+from sqlalchemy import text
 from mailer import SendMail
 from config import JWT_SECRET_KEY
 from cryptography.fernet import Fernet
@@ -142,6 +144,29 @@ class MemberService:
         rsp.status_code = 202
 
         return rsp
+    
+    def sync_members(self) -> Response:
+        self.dao.db_session.execute(text("TRUNCATE member;"))
+        self.dao.db_session.commit()
+
+        gc = gspread.service_account(filename="catholic-logos-google.json")
+        sh = gc.open("Member-List").sheet1.get_all_values()
+
+        sh = sh[2:]
+        for i in range(len(sh)):
+            sh[i] = sh[i][1:]
+
+        for row in sh:
+            name = row[1]
+            nickname = None if row[12] == '' else row[12]
+            active_duty = "로고스 전례단"
+            stdid = -1 if row[2] == '' else row[2]
+            major = row[4]
+            contact = row[7]
+
+            self.dao.insert_member(name, nickname, active_duty, int(stdid), major, contact)
+
+        return self.get_members()
     
 class ScoreService:
     def __init__(self, dao:ScoreTableDao):
