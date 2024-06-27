@@ -72,6 +72,8 @@ class MemberDao:
         for i in self.db_session.query(Member).all():
             rtn.append([i.id, i.name, i.nickname, i.active_duty, i.stdid, i.major, i.contact])
 
+        self.db_session.commit()
+
         return rtn
     
     def delete_member(self, id:int):
@@ -128,9 +130,12 @@ class ScoreTableDao:
         self.db_session.add(s)
         self.db_session.commit()
 
-    def delete_subject(self, id:int):
-        self.db_session.query(Score).filter_by(id=id).delete()
+    def get_all_subject(self) -> list:
+        rtn = []
+
+        for i in self.db_session.query(Score).all():
+            rtn.append([i.id, i.title, i.score])
+
         self.db_session.commit()
 
-    def get_all_subject(self) -> list:
-        return self.db_session.query(Score).all()
+        return rtn

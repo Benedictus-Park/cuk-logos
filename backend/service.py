@@ -146,11 +146,12 @@ class MemberService:
         return rsp
     
     def sync_members(self) -> Response:
+        # 24시간에 한 번 수행되도록!!!
         self.dao.db_session.execute(text("TRUNCATE member;"))
         self.dao.db_session.commit()
 
         gc = gspread.service_account(filename="catholic-logos-google.json")
-        sh = gc.open("Member-List").sheet1.get_all_values()
+        sh = gc.open("로고스 단원 명부").sheet1.get_all_values()
 
         sh = sh[2:]
         for i in range(len(sh)):
@@ -182,6 +183,25 @@ class ScoreService:
         rsp = jsonify(payload)
 
         return rsp
+    
+    def sync_subjects(self):
+        self.dao.db_session.execute(text("TRUNCATE scoretable;"))
+        self.dao.db_session.commit()
+
+        gc = gspread.service_account(filename="catholic-logos-google.json")
+        sh = gc.open("점수기준표").sheet1.get_all_values()
+
+        sh = sh[2:]
+        for i in range(len(sh)):
+            sh[i] = sh[i][2:]
+
+        for row in sh:
+            title = row[0]
+            score = row[1]
+
+            self.dao.insert_subject(title, score)
+
+        return self.get_subjects()
 
 class DutyLogService:
     def __init__(self, dao:DutyLogDao):
@@ -189,13 +209,15 @@ class DutyLogService:
     # Duty 관련은 맨 마지막에 처리
         
 # Duty Type
-    # 0 - 평일미사
-    # 1 - 주일미사
-    # 2 - 입학미사
-    # 3 - 개강미사
-    # 4 - 성목요일
-    # 5 - 성금요일
-    # 6 - 부활성야
-    # 7 - 성모의밤
-    # 8 - 세례식
-    # 9 - 쨈
+    # -1 쨈
+    # 1 평일미사
+    # 2 주일미사
+    # 3 입학미사
+    # 4 개강, 개교기념미사
+    # 5 성목요일
+    # 6 성금요일
+    # 7 성야미사
+    # 8 성탄미사
+    # 9 견진미사
+    # 10 세례미사
+    # 11 성모의밤

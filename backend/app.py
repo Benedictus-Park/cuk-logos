@@ -155,6 +155,16 @@ def get_all_members() -> Response:
     return memberService.get_members()
 
 # Scoretable Endpoints
+@app.route("/sync-scoretable", methods=["POST"])
+@login_required
+def sync_scoretable() -> Response:
+    return scoreService.sync_subjects()
+
+@app.route("/get-scoretable", methods=["POST"])
+@login_required
+def get_scoretable() -> Response:
+    return scoreService.get_subjects()
+
 # Duty Endpoints
 
 if __name__ == "__main__":

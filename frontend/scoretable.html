@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <title>로고스인사정보체계</title>
         <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="css/scoretable.css">
     </head>
     <body>
         <header>
@@ -12,12 +13,17 @@
         <div class="form">
             <h2>점수기준표</h2>
             <button id="btnSync">Google Spreadsheet와 동기화</button>
+            <br>
+            <br>
+            <br>
             <table>
                 <thead>
-
+                    <th id="code">코드</th>
+                    <th id="title">내용</th>
+                    <th id="time">시간</th>
                 </thead>
-                <tbody>
-
+                <tbody id="tbody">
+                    <!-- Generate by JS -->
                 </tbody>
             </table>
         </div>

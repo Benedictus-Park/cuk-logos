@@ -1,0 +1,23 @@
+thead th{
+    border-bottom: 3px solid gray;
+}
+
+tr{
+    text-align: center;
+}
+
+#code{
+    min-width: 75px;
+}
+
+#title{
+    min-width: 300px;
+}
+
+#time{
+    min-width: 100px;
+}
+
+tr td{
+    border-bottom: 1px solid gray;
+}
