@@ -32,14 +32,13 @@ CORS(app)
 dao = {
     'user':UserDao(db_session),
     'member':MemberDao(db_session),
-    'dutyLog':DutyLogDao(db_session),
     'scoreTable':ScoreTableDao(db_session)
 }
 
 userService = UserService(dao['user'])
 memberService = MemberService(dao['member'])
-dutyLogService = DutyLogService(dao['dutyLog'])
 scoreService = ScoreService(dao['scoreTable'])
+dutyService = DutyService()
 
 #
 # 로봇 생성 코드 추기
@@ -166,6 +165,22 @@ def get_scoretable() -> Response:
     return scoreService.get_subjects()
 
 # Duty Endpoints
+@app.route("/fill-gspread-date", methods=["POST"])
+@login_required
+def fill_gspread_date() -> Response:
+    payload = request.get_json()
+
+    try:
+        month_plus = payload['month_plus']
+    except KeyError:
+        return Response(status=400)
+    
+    return dutyService.fill_gsheet_date(month_plus)
+
+@app.route("/sync-duty", methods=["POST"])
+@login_required
+def sync_duty() -> Response:
+    return dutyService.sync_duty()
 
 if __name__ == "__main__":
     init_database()

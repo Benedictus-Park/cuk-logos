@@ -11,6 +11,6 @@ Base.metadata = MetaData()
 Base.query = db_session.query_property()
 
 def init_database():
-    from models import User, Member, DutyLog, Authcode, Duty
+    from models import User, Member, Authcode, Duty
     
     Base.metadata.create_all(engine)

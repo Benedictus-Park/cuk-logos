@@ -20,20 +20,7 @@ class Duty(Base):
     duty_type = Column(Integer, nullable=False)
     date = Column(Date, nullable=False)
 
-    def __init__(self, mid:int, duty_type:Integer, date:_date):
-        self.mid = mid
-        self.duty_type = duty_type
-        self.date = date
-
-class DutyLog(Base):
-    __tablename__ = "duty_log"
-    did = Column(Integer, primary_key=True)
-    mid = Column(Integer, nullable=False)
-    duty_type = Column(Integer, nullable=False)
-    date = Column(Date, nullable=False)
-
-    def __init__(self, did:int, mid:int, duty_type:int, date:_date):
-        self.did = did
+    def __init__(self, mid:int, duty_type:int, date:_date):
         self.mid = mid
         self.duty_type = duty_type
         self.date = date

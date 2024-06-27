@@ -3,11 +3,13 @@ import time
 import base64
 import bcrypt
 import gspread
+import calendar
 from dao import *
 from random import randint
 from sqlalchemy import text
 from mailer import SendMail
 from config import JWT_SECRET_KEY
+from dateutil.relativedelta import *
 from cryptography.fernet import Fernet
 from flask import jsonify, Response, g
 from datetime import datetime, timedelta, timezone
@@ -159,7 +161,7 @@ class MemberService:
 
         for row in sh:
             name = row[1]
-            nickname = None if row[12] == '' else row[12]
+            nickname = row[1][1:] if row[12] == '' else row[12]
             active_duty = "로고스 전례단"
             stdid = -1 if row[2] == '' else row[2]
             major = row[4]
@@ -203,10 +205,63 @@ class ScoreService:
 
         return self.get_subjects()
 
-class DutyLogService:
-    def __init__(self, dao:DutyLogDao):
-        self.dao = dao
-    # Duty 관련은 맨 마지막에 처리
+class DutyService:
+    def __init__(self):
+        pass # dao 받기
+
+    def fill_gsheet_date(self, month_plus:int=0):
+        gc = gspread.service_account("catholic-logos-google.json")
+        sh = gc.open('전례표-양식').sheet1
+
+        KST = timezone(timedelta(hours=9))
+
+        today = datetime.now(KST) + relativedelta(months=month_plus)
+        cal = calendar.Calendar(firstweekday=6)
+        month = cal.monthdatescalendar(today.year, today.month)
+
+        for week in range(len(month)):
+            for day in range(len(month[week])):
+                if month[week][day].month != today.month:
+                    month[week][day] = ''
+                elif month[week][day].weekday() == 5:
+                    month[week][day] = ''
+                else:
+                    if month[week][day].weekday() == 6:
+                        month[week][day] = str(month[week][day].day) + "(보편 : )"
+                    else:
+                        month[week][day] = month[week][day].day
+
+        offset = 3
+
+        if month[0].count('') == 7:
+            month = month[1:]
+
+        if month[-1].count('') == 7:
+            month = month[:-1]
+
+        sh.update_cell(1, 1, f'{today.year}-{today.month}')
+
+        for week in month:
+            sh.update(f'B{offset}:G{offset + 1}', [week[:-1]])
+            offset += 2
+            sh.update(f'B{offset}:G{offset}', [[''] * 6])
+
+        sh.format("A1:H20", {
+            'horizontalAlignment':"CENTER",
+            'textFormat':{'bold':True}
+        })
+
+        payload = {
+            'jwt':create_jwt(g.uid, g.name, g.email)
+        }
+
+        return jsonify(payload)
+    
+    def sync_duty(self) -> Response:
+        gc = gspread.service_account("catholic-logos-google.json")
+        sh = gc.open('전례표').sheet1.get_all_values()
+
+
         
 # Duty Type
     # -1 쨈

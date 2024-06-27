@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>로고스인사정보체계</title>
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <header>
+            <h1>로 고 스 인 사 정 보 체 계</h1>
+        </header>
+        <div class="form">
+            <h2>전례표</h2>
+            <button id="btnSync">Google Spreadsheet와 동기화 | [전례표] 파일을 읽어옵니다. 매일 1회 자동 실행됩니다.</button><br>
+            <button id="btnFill_thisMonth">Google Spreadsheet에 당월 날짜 채우기 | [전례표-양식] 파일에 당월 날짜를 채웁니다.</button><br>
+            <button id="btnFill_nextMonth">Google Spreadsheet에 익월 날짜 채우기 | [전례표-양식] 파일에 익월 날짜를 채웁니다.</button>
+            <br>
+            <br>
+            <br>
+            <h3>Read 결과</h3>
+            <table>
+                <thead>
+                    <th id="code">날짜</th>
+                    <th id="title">봉사자</th>
+                    <th id="time">시간</th>
+                </thead>
+                <tbody id="tbody">
+                    <!-- Generate by JS -->
+                </tbody>
+            </table>
+        </div>
+        <script src="js/login_required.js"></script>
+        <script src="js/duty.js"></script>
+    </body>
+</html>
