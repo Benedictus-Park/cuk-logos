@@ -269,7 +269,7 @@ class DutyService:
 
         return jsonify(payload)
     
-    def sync_duty(self, members:list[Member]) -> Response:
+    def sync_duty(self, members:list) -> Response:
         self.dao.db_session.execute(text("TRUNCATE duty;"))
         self.dao.db_session.commit()
         
@@ -316,13 +316,12 @@ class DutyService:
 
                     duty_list.append([remove_splits(row_days[j].split('(')[0]), duty_type, remove_splits(row_text[j])])
 
-        # Duty(Date, Duty_DayType, Nickname, Duty_Type)
         duty_data = []
 
         for i in duty_list:
             date = datetime(today.year, today.month, int(i[0])).date()
 
-            if i[1] == -1:
+            if i[1] == 0:
                 if date.weekday() == 6:
                     i[1] = 2
                 else:
@@ -371,7 +370,7 @@ class DutyService:
         pair = dict() # Key(nickname) : Val(mid)
 
         for member in members:
-            pair[member.nickname] = member.id
+            pair[member[2]] = member[0]
         
         duty_in = []
 
@@ -382,13 +381,13 @@ class DutyService:
 
         return self.get_duties(members)
     
-    def get_duties(self, members:list[Member]):
+    def get_duties(self, members:list):
         pair_mem = {
-            0:'입력전'
-        } # Key(nickname) : Val(mid)
+            0:'수행전'
+        } # Key(mid) : Val(nickname)
 
         for member in members:
-            pair_mem[member.id] = member.nickname
+            pair_mem[member[0]] = member[1]
 
         pair_daytype = {
             1:"평일미사",
@@ -405,13 +404,17 @@ class DutyService:
         }
 
         l = self.dao.get_all_duties()
+        lst_compressed = []
 
         for i in range(len(l)):
             l[i][1] = pair_mem[l[i][1]]
             l[i][2] = pair_daytype[l[i][2]]
+            l[i][4] = pair_mem[l[i][4]] if l[i][1] != pair_mem[l[i][4]] else "본인 수행"
+
+            lst_compressed.append([l[i][1], l[i][2], l[i][4]])
 
         payload = {
-            'duties':[] if len(l) == 0 else l,
+            'duties':lst_compressed,
             'jwt':create_jwt(g.uid, g.name, g.email)
         }
         rsp = jsonify(payload)

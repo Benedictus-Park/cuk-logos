@@ -1,20 +1,10 @@
-fetch("http://127.0.0.1:4444/get-all-members", {
+fetch("http://127.0.0.1:4444/sync-members", {
     method:"POST",
     headers:{
         "Content-Type":"application/json",
         "Authorization":sessionStorage.getItem("jwt")
     }
 }).then((rsp) => setTable(rsp));
-
-document.getElementById("btnSync").addEventListener("click", () => {
-    fetch("http://127.0.0.1:4444/sync-members", {
-        method:"POST",
-        headers:{
-            "Content-Type":"application/json",
-            "Authorization":sessionStorage.getItem("jwt")
-        }
-    }).then((rsp) => setTable(rsp));
-});
 
 function setTable(rsp){
     if(rsp.ok){

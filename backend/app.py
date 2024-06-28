@@ -186,3 +186,6 @@ def sync_duty() -> Response:
 if __name__ == "__main__":
     init_database()
     app.run("127.0.0.1", port=4444, debug=True)
+
+    memberService.sync_members()
+    dutyService.sync_duty()

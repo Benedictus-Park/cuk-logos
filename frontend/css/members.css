@@ -33,3 +33,7 @@ tr{
 tr td{
     border-bottom: 1px solid gray;
 }
+
+table{
+    margin-left: 30px;
+}

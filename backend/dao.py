@@ -105,7 +105,7 @@ class DutyDao:
     def get_all_duties(self) -> list:
         rtn = []
         
-        for i in self.db_session.query(Duty).all():
-            rtn.append([i.date, i.did, i.duty_daytype, i.duty_type, i.complete_mid])
+        for i in sorted(self.db_session.query(Duty).all(), key=lambda x:x.date):
+            rtn.append([i.date.strftime('%Y-%m-%d'), i.mid, i.duty_daytype, i.duty_type, i.complete_mid, i.did])
 
         return rtn
