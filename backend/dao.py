@@ -1,6 +1,7 @@
 from db import *
 from models import *
 from datetime import datetime
+from datetime import date as _date
 from sqlalchemy.orm import scoped_session
 
 # 유저 검색에 필요한 Key가 잘못된 경우 Raise
@@ -61,9 +62,8 @@ class MemberDao:
     def __init__(self, db_session:scoped_session):
         self.db_session = db_session
 
-    def insert_member(self, name:str, nickname:str, active_duty:str, stdid:int, major:str, contact:str):
-        m = Member(name, nickname, active_duty, stdid, major, contact)
-        self.db_session.add(m)
+    def insert_members(self, members:list[Member]):
+        self.db_session.add_all(members)
         self.db_session.commit()
 
     def get_all_memebers(self) -> list:
@@ -71,8 +71,6 @@ class MemberDao:
 
         for i in self.db_session.query(Member).all():
             rtn.append([i.id, i.name, i.nickname, i.active_duty, i.stdid, i.major, i.contact])
-
-        self.db_session.commit()
 
         return rtn
     
@@ -84,9 +82,8 @@ class ScoreTableDao:
     def __init__(self, db_session:scoped_session):
         self.db_session = db_session
 
-    def insert_subject(self, title:str, score:int):
-        s = Score(title, score)
-        self.db_session.add(s)
+    def insert_subjects(self, subjects:list[Score]):
+        self.db_session.add_all(subjects)
         self.db_session.commit()
 
     def get_all_subject(self) -> list:
@@ -95,6 +92,20 @@ class ScoreTableDao:
         for i in self.db_session.query(Score).all():
             rtn.append([i.id, i.title, i.score])
 
+        return rtn
+    
+class DutyDao:
+    def __init__(self, db_session:scoped_session):
+        self.db_session = db_session
+
+    def insert_duties(self, duties:list[Duty]):
+        self.db_session.add_all(duties)
         self.db_session.commit()
+
+    def get_all_duties(self) -> list:
+        rtn = []
+        
+        for i in self.db_session.query(Duty).all():
+            rtn.append([i.date, i.did, i.duty_daytype, i.duty_type, i.complete_mid])
 
         return rtn

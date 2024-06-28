@@ -17,13 +17,16 @@ class Duty(Base):
     __tablename__ = "duty"
     did = Column(Integer, autoincrement=True, primary_key=True)
     mid = Column(Integer, nullable=False)
-    duty_type = Column(Integer, nullable=False)
     date = Column(Date, nullable=False)
+    duty_daytype = Column(Integer, nullable=False)
+    duty_type = Column(VARCHAR(6), nullable=False)
+    complete_mid = Column(Integer, nullable=True, default=0)
 
-    def __init__(self, mid:int, duty_type:int, date:_date):
+    def __init__(self, mid:int, date:_date, duty_daytype:int, duty_type:str):
         self.mid = mid
-        self.duty_type = duty_type
         self.date = date
+        self.duty_daytype = duty_daytype
+        self.duty_type = duty_type
 
 class Member(Base):
     __tablename__ = "member"

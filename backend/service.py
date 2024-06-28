@@ -5,6 +5,7 @@ import bcrypt
 import gspread
 import calendar
 from dao import *
+from models import *
 from random import randint
 from sqlalchemy import text
 from mailer import SendMail
@@ -13,6 +14,13 @@ from dateutil.relativedelta import *
 from cryptography.fernet import Fernet
 from flask import jsonify, Response, g
 from datetime import datetime, timedelta, timezone
+
+def remove_splits(txt:str) -> str:
+    rtn = ""
+    for i in range(len(txt)):
+        if txt[i] != ' ' and txt[i] != ',':
+            rtn += txt[i]
+    return rtn
 
 def create_jwt(uid:int, name:str, email:str) -> str:
     return jwt.encode({
@@ -159,6 +167,8 @@ class MemberService:
         for i in range(len(sh)):
             sh[i] = sh[i][1:]
 
+        members = []
+
         for row in sh:
             name = row[1]
             nickname = row[1][1:] if row[12] == '' else row[12]
@@ -167,7 +177,9 @@ class MemberService:
             major = row[4]
             contact = row[7]
 
-            self.dao.insert_member(name, nickname, active_duty, int(stdid), major, contact)
+            members.append(Member(name, nickname, active_duty, int(stdid), major, contact))
+
+        self.dao.insert_members(members)
 
         return self.get_members()
     
@@ -193,21 +205,21 @@ class ScoreService:
         gc = gspread.service_account(filename="catholic-logos-google.json")
         sh = gc.open("점수기준표").sheet1.get_all_values()
 
+        lst_s = []
         sh = sh[2:]
         for i in range(len(sh)):
             sh[i] = sh[i][2:]
 
         for row in sh:
-            title = row[0]
-            score = row[1]
+            lst_s.append(Score(row[0], row[1]))
 
-            self.dao.insert_subject(title, score)
+        self.dao.insert_subjects(lst_s)
 
         return self.get_subjects()
 
 class DutyService:
-    def __init__(self):
-        pass # dao 받기
+    def __init__(self, dao:DutyDao):
+        self.dao = dao
 
     def fill_gsheet_date(self, month_plus:int=0):
         gc = gspread.service_account("catholic-logos-google.json")
@@ -257,22 +269,151 @@ class DutyService:
 
         return jsonify(payload)
     
-    def sync_duty(self) -> Response:
-        gc = gspread.service_account("catholic-logos-google.json")
-        sh = gc.open('전례표').sheet1.get_all_values()
-
-
+    def sync_duty(self, members:list[Member]) -> Response:
+        self.dao.db_session.execute(text("TRUNCATE duty;"))
+        self.dao.db_session.commit()
         
-# Duty Type
-    # -1 쨈
-    # 1 평일미사
-    # 2 주일미사
-    # 3 입학미사
-    # 4 개강, 개교기념미사
-    # 5 성목요일
-    # 6 성금요일
-    # 7 성야미사
-    # 8 성탄미사
-    # 9 견진미사
-    # 10 세례미사
-    # 11 성모의밤
+        gc = gspread.service_account("catholic-logos-google.json")
+        sh = gc.open('전례표-양식').sheet1
+
+        sh = sh.get_all_values()
+
+        today = datetime.strptime(sh[0][0], "%Y-%m")
+
+        sh = sh[2:]
+
+        duty_list = []
+
+        for i in range(0, len(sh), 2):
+            row_days = sh[i]
+            row_text = sh[i + 1]
+
+            for j in range(7):
+                if row_days[j] == '':
+                    continue
+                else:
+                    duty_type = 0
+                    row_days[j] = remove_splits(row_days[j])
+
+                    if "입학" in row_days[j]:
+                        duty_type = 3
+                    elif "개강" in row_days[j] or "개교" in row_days[j]:
+                        duty_type = 4
+                    elif "성목" in row_days[j]:
+                        duty_type = 5
+                    elif "성금" in row_days[j]:
+                        duty_type = 6
+                    elif "성야" in row_days[j]:
+                        duty_type = 7
+                    elif "성탄" in row_days[j]:
+                        duty_type = 8
+                    elif "견진" in row_days[j]:
+                        duty_type = 9
+                    elif "세례" in row_days[j]:
+                        duty_type = 10
+                    elif "성모" in row_days[j]:
+                        duty_type = 11
+
+                    duty_list.append([remove_splits(row_days[j].split('(')[0]), duty_type, remove_splits(row_text[j])])
+
+        # Duty(Date, Duty_DayType, Nickname, Duty_Type)
+        duty_data = []
+
+        for i in duty_list:
+            date = datetime(today.year, today.month, int(i[0])).date()
+
+            if i[1] == -1:
+                if date.weekday() == 6:
+                    i[1] = 2
+                else:
+                    i[1] = 1
+
+            dutyTexts = i[2].split('\n')
+
+            if len(dutyTexts) <= 1:
+                continue
+            
+            # 복사 처리
+            duty_names = dutyTexts[0].split(':')
+            if len(duty_names) > 1:
+                duty_names = duty_names[1]
+                if len(duty_names) == 2:
+                    if duty_names != '미정':
+                        duty_data.append((date, i[1], duty_names, '복사'))
+                else:
+                    duty_data.append((date, i[1], duty_names[:2], '복사'))
+                    duty_data.append((date, i[1], duty_names[2:], '복사'))
+            
+            # 해설 처리
+            duty_names = dutyTexts[1].split(':')
+            if len(duty_names) > 1:
+                duty_names = duty_names[1]
+
+                if duty_names.find("(") != -1:
+                    name = duty_names.split("(")[0]
+                    duty_data.append((date, i[1], name, '해설'))
+
+                    name = duty_names.split("(")[1][:-1]
+                    duty_data.append((date, i[1], name, '참관'))
+                else:
+                    duty_data.append((date, i[1], duty_names, '해설'))
+
+            # 독서 처리
+            if '1독' in dutyTexts[2]:
+                name = dutyTexts[2].split(':')[1]
+                duty_data.append((date, i[1], name, '1독'))
+                name = dutyTexts[3].split(':')[1]
+                duty_data.append((date, i[1], name, '2독'))
+            else:
+                name = dutyTexts[2].split(':')[1]
+                duty_data.append((date, i[1], name, '독서'))
+        
+        pair = dict() # Key(nickname) : Val(mid)
+
+        for member in members:
+            pair[member.nickname] = member.id
+        
+        duty_in = []
+
+        for i in duty_data:
+            duty_in.append(Duty(pair[i[2]], i[0], i[1], i[3]))
+
+        self.dao.insert_duties(duty_in)
+
+        return self.get_duties(members)
+    
+    def get_duties(self, members:list[Member]):
+        pair_mem = {
+            0:'입력전'
+        } # Key(nickname) : Val(mid)
+
+        for member in members:
+            pair_mem[member.id] = member.nickname
+
+        pair_daytype = {
+            1:"평일미사",
+            2:"주일미사",
+            3:"입학미사",
+            4:"개강/개교기념미사",
+            5:"성목요일",
+            6:"성금요일",
+            7:"성야미사",
+            8:"성탄미사",
+            9:"견진미사",
+            10:"세례미사",
+            11:"성모의밤"
+        }
+
+        l = self.dao.get_all_duties()
+
+        for i in range(len(l)):
+            l[i][1] = pair_mem[l[i][1]]
+            l[i][2] = pair_daytype[l[i][2]]
+
+        payload = {
+            'duties':[] if len(l) == 0 else l,
+            'jwt':create_jwt(g.uid, g.name, g.email)
+        }
+        rsp = jsonify(payload)
+
+        return rsp
