@@ -145,10 +145,13 @@ class MemberService:
         self.dao = dao
     
     def get_members(self) -> Response:
-        members = self.dao.get_all_memebers()
+        members = []
+
+        for i in self.dao.get_all_memebers():
+            members.append([i.id, i.name, i.stdid, i.major, i.contact, i.nickname])
 
         rsp = jsonify({
-            "members":[] if len(members) == 0 else members,
+            "members":members,
             "jwt":create_jwt(g.uid, g.name, g.email)
         })
         rsp.status_code = 202
@@ -188,10 +191,13 @@ class ScoreService:
         self.dao = dao
     
     def get_subjects(self) -> Response:
-        l = self.dao.get_all_subject()
+        l = []
+
+        for i in self.dao.get_all_subject():
+            l.append([i.id, i.title, i.score])
 
         payload = {
-            'subjects':[] if len(l) == 0 else l,
+            'subjects':l,
             'jwt':create_jwt(g.uid, g.name, g.email)
         }
         rsp = jsonify(payload)
@@ -269,7 +275,7 @@ class DutyService:
 
         return jsonify(payload)
     
-    def sync_duty(self, members:list) -> Response:
+    def sync_duty(self, members:list[Member]) -> Response:
         self.dao.db_session.execute(text("TRUNCATE duty;"))
         self.dao.db_session.commit()
         
@@ -370,7 +376,7 @@ class DutyService:
         pair = dict() # Key(nickname) : Val(mid)
 
         for member in members:
-            pair[member[2]] = member[0]
+            pair[member.nickname] = member.id
         
         duty_in = []
 
@@ -381,13 +387,13 @@ class DutyService:
 
         return self.get_duties(members)
     
-    def get_duties(self, members:list):
+    def get_duties(self, members:list[Member]):
         pair_mem = {
             0:'수행전'
         } # Key(mid) : Val(nickname)
 
         for member in members:
-            pair_mem[member[0]] = member[1]
+            pair_mem[member.id] = member.nickname
 
         pair_daytype = {
             1:"평일미사",

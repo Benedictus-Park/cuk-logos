@@ -66,11 +66,11 @@ class MemberDao:
         self.db_session.add_all(members)
         self.db_session.commit()
 
-    def get_all_memebers(self) -> list:
+    def get_all_memebers(self) -> list[Member]:
         rtn = []
 
         for i in self.db_session.query(Member).all():
-            rtn.append([i.id, i.name, i.nickname, i.active_duty, i.stdid, i.major, i.contact])
+            rtn.append([i])
 
         return rtn
     
@@ -86,11 +86,11 @@ class ScoreTableDao:
         self.db_session.add_all(subjects)
         self.db_session.commit()
 
-    def get_all_subject(self) -> list:
+    def get_all_subject(self) -> list[Score]:
         rtn = []
 
         for i in self.db_session.query(Score).all():
-            rtn.append([i.id, i.title, i.score])
+            rtn.append([i])
 
         return rtn
     
@@ -102,10 +102,13 @@ class DutyDao:
         self.db_session.add_all(duties)
         self.db_session.commit()
 
-    def get_all_duties(self) -> list:
+    def get_all_duties(self) -> list[Duty]:
         rtn = []
         
         for i in sorted(self.db_session.query(Duty).all(), key=lambda x:x.date):
-            rtn.append([i.date.strftime('%Y-%m-%d'), i.mid, i.duty_daytype, i.duty_type, i.complete_mid, i.did])
+            rtn.append([i])
 
         return rtn
+    
+    def get_daily_duty(self, date:_date) -> list[Duty]:
+        self.db_session.query(Duty).filter_by()

@@ -25,10 +25,10 @@ function setTable(rsp){
             
                 row.childNodes[0].textContent = members[i][0];
                 row.childNodes[1].textContent = members[i][1];
-                row.childNodes[2].textContent = members[i][4];
-                row.childNodes[3].textContent = members[i][5];
-                row.childNodes[4].textContent = members[i][6];
-                row.childNodes[5].textContent = members[i][2];
+                row.childNodes[2].textContent = members[i][2];
+                row.childNodes[3].textContent = members[i][3];
+                row.childNodes[4].textContent = members[i][4];
+                row.childNodes[5].textContent = members[i][5];
 
                 document.getElementById("tbody").appendChild(row);
             }
