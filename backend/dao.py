@@ -70,7 +70,7 @@ class MemberDao:
         rtn = []
 
         for i in self.db_session.query(Member).all():
-            rtn.append([i])
+            rtn.append(i)
 
         return rtn
     
@@ -90,7 +90,7 @@ class ScoreTableDao:
         rtn = []
 
         for i in self.db_session.query(Score).all():
-            rtn.append([i])
+            rtn.append(i)
 
         return rtn
     
@@ -106,9 +106,14 @@ class DutyDao:
         rtn = []
         
         for i in sorted(self.db_session.query(Duty).all(), key=lambda x:x.date):
-            rtn.append([i])
+            rtn.append(i)
 
         return rtn
     
     def get_daily_duty(self, date:_date) -> list[Duty]:
-        self.db_session.query(Duty).filter_by()
+        rtn = []
+
+        for i in self.db_session.query(Duty).filter_by(date=date).all():
+            rtn.append(i)
+
+        return rtn

@@ -426,3 +426,26 @@ class DutyService:
         rsp = jsonify(payload)
 
         return rsp
+    
+    def get_daily_duty(self, members:list[Member], date:Date) -> Response:
+        daily_duty = self.dao.get_daily_duty(date)
+        members_dict = { 0:'수행전' }
+
+        for i in members:
+            members_dict[i.id] = i.name
+
+        dutyInfos = []
+
+        for i in daily_duty:
+            dutyInfos.append({
+                "did":i.did,
+                "mid":i.mid,
+                "name":members_dict[i.mid],
+                "complete_mem_name":members_dict[i.complete_mid],
+                "complete_mid":i.complete_mid
+            })
+
+        return jsonify({
+            "duty":dutyInfos,
+            "jwt":create_jwt(g.uid, g.name, g.email)
+        })
