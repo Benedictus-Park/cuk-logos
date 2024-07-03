@@ -183,6 +183,11 @@ def fill_gspread_date() -> Response:
 def sync_duty() -> Response:
     return dutyService.sync_duty(memberService.dao.get_all_memebers())
 
+@app.route("/get-daily-duty", methods=["GET"])
+def get_daily_duty() -> Response:
+    date = request.args.get('date')
+    return dutyService.get_daily_duty(memberService.dao.get_all_memebers(), datetime.date(datetime.strptime(date, "%Y-%m-%d")))
+
 if __name__ == "__main__":
     init_database()
     app.run("127.0.0.1", port=4444, debug=True)
