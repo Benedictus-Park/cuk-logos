@@ -1,10 +1,28 @@
-fetch("http://127.0.0.1:4444/sync-duty", {
+fetch("http://127.0.0.1:4444/get-all-duty", {
     method:"POST",
     headers:{
         "Content-Type":"application/json",
         "Authorization":sessionStorage.getItem("jwt")
     }
 }).then((rsp) => {
+    setTable(rsp);
+});
+
+document.getElementById("btnSync").addEventListener('click', () => {
+    fetch("http://127.0.0.1:4444/sync-duty", {
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json",
+            "Authorization":sessionStorage.getItem("jwt")
+        }
+    }).then((rsp) => {
+        setTable(rsp);
+    });
+
+    alert("기다리세용 언젠간 돼용");
+});
+
+function setTable(rsp){
     if(rsp.ok){
         rsp.json().then((json) => {
             let duties = json['duties'];
@@ -29,7 +47,7 @@ fetch("http://127.0.0.1:4444/sync-duty", {
     else{
         alert("아마 GSpread에 너무 많은 요청을 보낸 것 같습니다. 1분 기다려 주세요.");
     }
-});
+}
 
 document.getElementById("btnFill_thisMonth").addEventListener('click', () => {
     fetch("http://127.0.0.1:4444/fill-gspread-date", {

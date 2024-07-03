@@ -412,12 +412,12 @@ class DutyService:
         l = self.dao.get_all_duties()
         lst_compressed = []
 
-        for i in range(len(l)):
-            l[i][1] = pair_mem[l[i][1]]
-            l[i][2] = pair_daytype[l[i][2]]
-            l[i][4] = pair_mem[l[i][4]] if l[i][1] != pair_mem[l[i][4]] else "본인 수행"
-
-            lst_compressed.append([l[i][1], l[i][2], l[i][4]])
+        for i in l:
+            lst_compressed.append([
+                i.date.strftime("%Y-%m-%d"),
+                pair_mem[i.mid] + f"({i.duty_type})", 
+                pair_mem[i.complete_mid] if i.mid != pair_mem[i.complete_mid] else "본인 수행"
+            ])
 
         payload = {
             'duties':lst_compressed,

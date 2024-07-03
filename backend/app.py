@@ -178,6 +178,11 @@ def fill_gspread_date() -> Response:
     
     return dutyService.fill_gsheet_date(month_plus)
 
+@app.route("/get-all-duty", methods=["POST"])
+@login_required
+def get_all_duty() -> Response:
+    return dutyService.get_duties(memberService.dao.get_all_memebers())
+
 @app.route("/sync-duty", methods=["POST"])
 @login_required
 def sync_duty() -> Response:

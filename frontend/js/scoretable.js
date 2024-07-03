@@ -14,6 +14,8 @@ document.getElementById("btnSync").addEventListener('click', () => {
             "Authorization":sessionStorage.getItem("jwt")
         }
     }).then((rsp) => setTable(rsp));
+
+    alert("기다리세용 언젠간 돼용");
 });
 
 function setTable(rsp){

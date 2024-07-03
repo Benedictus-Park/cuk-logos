@@ -1,4 +1,16 @@
-fetch("http://127.0.0.1:4444/sync-members", {
+document.getElementById("btnSync").addEventListener('click', () => {
+    fetch("http://127.0.0.1:4444/sync-members", {
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json",
+            "Authorization":sessionStorage.getItem("jwt")
+        }
+    }).then((rsp) => setTable(rsp));
+
+    alert("기다리세용 언젠간 돼용");
+});
+
+fetch("http://127.0.0.1:4444/get-all-members", {
     method:"POST",
     headers:{
         "Content-Type":"application/json",
